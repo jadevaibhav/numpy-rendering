@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from sampling import *
 from utils import *
 from primitives import Rays,Geometry,Scene
@@ -43,6 +44,7 @@ class RayTracer(object):
         l_e = np.where(np.logical_and(l_e != np.array([0, 0, 0]), (ids != -1)[:, np.newaxis]), l_e, 0)
         
         return hit_points,normals,brdf_params,l_e
+    
     def render(self,rays):
         
         hit_points,normals,brdf_params,L_e = self.intersect_with_scene(rays)
@@ -51,7 +53,7 @@ class RayTracer(object):
         L = np.zeros(normals.shape, dtype=np.float64)
         L += L_e
         
-        self.sampler.set_initial_params(hit_points,normals,brdf_params, normals, brdf_params,rays.Ds)
+        self.sampler.set_initial_params(hit_points,normals,brdf_params,rays.Ds)
         
         for l,light in enumerate(self.scene.lights):
             self.sampler.set_light(light)
@@ -63,3 +65,31 @@ class RayTracer(object):
             L += self.sampler.illumination(light_e,shadow_rays.Ds,prob)
 
         return L.reshape((self.H, self.W, 3))
+    
+    def progressive_render_display(self, jitter=False, total_spp=20, num_bounces=3,
+                                   ):
+        # matplotlib voodoo to support redrawing on the canvas
+        plt.figure()
+        plt.ion()
+        plt.show()
+
+        L = np.zeros((self.H, self.W, 3), dtype=np.float64)
+
+        # more matplotlib voodoo: update the plot using the
+        # image handle instead of looped imshow for performance
+        image_data = plt.imshow(L)
+
+        ### BEGIN CODE (note: we will not grade your progressive rendering code in A4)
+        # [TODO] replace the next five lines with any
+        # accumulation, output and/or display code you wish
+        for i in range(total_spp):
+            plt.title(f"current spp: {(i + 1)} of {total_spp}")
+            vectorized_eye_rays = self.generate_eye_rays()
+            L += self.render(vectorized_eye_rays)
+            #print(np.mean(L))
+            image_data.set_data(np.clip(L/(i+1), 0, 1))
+            plt.pause(0.001)
+        ### END CODE
+
+        plt.savefig(f"render-{self.sampler.sampling_type}-num_bounce-{num_bounces}-r-{self.scene.geometries[0].r}-{total_spp}-spp.png")
+        plt.show(block=True)
