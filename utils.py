@@ -15,9 +15,17 @@ def extrinsic_matrix(look,up,cam):
     M[:,:3] = np.array([x_c,y_c,z_c,cam]).T
     return M
 
-def generate_rays(fov,H,W):
-    x_ndc = np.linspace(-1,1,num=W,endpoint=False)[np.newaxis,...].repeat(H,axis=0) + 1/W
-    y_ndc = np.linspace(1,-1,num=H,endpoint=False)[...,np.newaxis].repeat(W,axis=1) - 1/H
+def generate_rays(fov,H,W,jitter=False):
+
+    if jitter:
+            jitter_x = np.random.rand( H,W )
+            jitter_y = np.random.rand( H,W )
+            x_ndc = np.linspace(-1,1,num=W,endpoint=False)[np.newaxis,...].repeat(H,axis=0) + 2/W*jitter_x
+            y_ndc = np.linspace(1,-1,num=H,endpoint=False)[...,np.newaxis].repeat(W,axis=1) - 2/H*jitter_y
+
+    else:    
+        x_ndc = np.linspace(-1,1,num=W,endpoint=False)[np.newaxis,...].repeat(H,axis=0) + 1/W
+        y_ndc = np.linspace(1,-1,num=H,endpoint=False)[...,np.newaxis].repeat(W,axis=1) - 1/H
 
     x_cam = x_ndc*np.tan(fov/360*np.pi)*(W/H)
     y_cam = y_ndc*np.tan(fov/360*np.pi)
