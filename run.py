@@ -1,34 +1,75 @@
-from sampling import *
-from primitives import Scene, Rays, Geometry, Sphere, Mesh
+import argparse
+import yaml
 from renderer import RayTracer
-import numpy as np
+from sampling import build_sampler
+from primitives import *
+
+def load_config(path):
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
+
+def build_camera(cfg):
+    return Camera(
+        eye=cfg['eye'],
+        look_at=cfg['look_at'],
+        up=cfg['up'],
+        fov=cfg['fov'],
+        W=cfg['width'],
+        H=cfg['height'], 
+        jitter = cfg["jitter"]
+    )
+
+def build_scene(cfg):
+    objects = []
+
+    for geom in cfg['scene']['geometries']:
+        brdf_params = geom.get('brdf_params', [1.0, 1.0, 1.0, 1.0])
+        Le = geom.get('Le', [0.0, 0.0, 0.0])
+
+        if geom['type'] == 'Sphere':
+            obj = Sphere(
+                r=geom['radius'],
+                c=geom['center'],
+                brdf_params=brdf_params,
+                Le=Le
+            )
+        elif geom['type'] == 'Mesh':
+            obj = load_mesh(
+                filepath=geom['path'],
+                scale=geom.get('scale', 1.0),
+                translation=geom.get('translation', [0, 0, 0]),
+                brdf_params=brdf_params,
+                Le=Le
+            )
+        else:
+            raise ValueError(f"Unsupported geometry type: {geom['type']}")
+        
+        objects.append(obj)
+
+    return Scene(objects)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default='config.yaml')
+    args = parser.parse_args()
+
+    cfg = load_config(args.config)
+    camera = build_camera(cfg['camera'])
+    sampler = build_sampler(cfg['sampler'])
+    scene = build_scene(cfg)
+
+    raytracer = RayTracer(
+        scene=scene,
+        camera=camera,
+        sampler=sampler,
+        max_depth=cfg['render']['max_depth'],
+    )
+
+    raytracer.render(
+        samples=cfg['render']['samples'],
+        output_path=cfg['render']['output_path'],
+        progressive_display=cfg['render'].get('progressive_display', False)
+    )
 
 if __name__ == '__main__':
-    scene = Scene()
-    sampler = LightSampling()
-    scene.add_geometries([
-            Sphere(60, np.array([213 + 65, 450, 227 + 105 / 2 - 100]),
-                   Le=1.25 * np.array([15.6, 15.6, 15.6])),
-            Mesh("cbox_floor.npz",
-                 brdf_params=np.array([0.76, 0.76, 0.76, 1])),
-            Mesh("cbox_ceiling.npz",
-                 brdf_params=np.array([0.76, 0.76, 0.76, 1])),
-            Mesh("cbox_back.npz",
-                 brdf_params=np.array([0.76, 0.76, 0.76, 1])),
-            Mesh("cbox_greenwall.npz",
-                 brdf_params=np.array([0.16, 0.76, 0.16, 1])),
-            Mesh("cbox_redwall.npz",
-                 brdf_params=np.array([0.76, 0.16, 0.16, 1])),
-            Mesh("cbox_smallbox.npz",
-                 brdf_params=np.array([0.76, 0.76, 0.76, 1])),
-            Mesh("cbox_largebox.npz",
-                 brdf_params=np.array([0.76, 0.76, 0.76, 1]))
-        ])
-    
-    renderer = RayTracer(scene=scene,sampler=sampler,camconfig=
-                        { 'H': 512,'W': 512,'fov': 39,
-                        'look': np.array([278, 273, -769], dtype=np.float64),
-                        'up': np.array([0, 1, 0], dtype=np.float64),
-                        'cam': np.array([278, 273, -770], dtype=np.float64) 
-                        })
-    renderer.progressive_render_display(jitter=False)
+    main()
