@@ -34,10 +34,8 @@ def build_scene(cfg):
                 Le=Le
             )
         elif geom['type'] == 'Mesh':
-            obj = load_mesh(
+            obj = Mesh(
                 filepath=geom['path'],
-                scale=geom.get('scale', 1.0),
-                translation=geom.get('translation', [0, 0, 0]),
                 brdf_params=brdf_params,
                 Le=Le
             )

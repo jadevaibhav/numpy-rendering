@@ -6,17 +6,10 @@ from primitives import Rays,Geometry,Scene
 
 class RayTracer(object): 
 
-    def __init__(self,scene,sampler, camconfig= {'H':64,'W':64,'fov':60,
-                           'look':np.array([-10,1,1]),'up':np.array([0,1,0]),
-                           'cam':np.array([10,1,1])}) -> None:
-        self.scene = Scene(**scene)
-        self.sampler = Sampling(**sampler)
-        self.H = camconfig["H"]
-        self.W = camconfig["W"]
-        self.fov = camconfig["fov"]
-        self.look = camconfig["look"]
-        self.up = camconfig["up"]
-        self.cam = camconfig["cam"]
+    def __init__(self,scene,sampler, camera) -> None:
+        self.scene = scene
+        self.sampler = sampler
+        self.camera = camera
     
     def generate_cam_rays(self):
         

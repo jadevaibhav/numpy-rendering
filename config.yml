@@ -1,35 +1,64 @@
-# config.yaml
-
 image:
   width: 512
   height: 512
-  spp: 16             # samples per pixel
-  output_path: "outputs/render.png"
+  spp: 16
+  output_path: "outputs/veach_scene.png"
 
 camera:
-  eye: [0.0, 0.0, 3.0]
-  look_at: [0.0, 0.0, 0.0]
+  eye: [0.0, 2.0, 15.0]
+  look_at: [0.0, -2.0, 2.5]  # this is normalized in code
   up: [0.0, 1.0, 0.0]
-  fov: 45
+  fov: 40
 
 sampler:
-  type: Hemisphere   # or "Cosine", "UniformSphere", etc.
+  type: Cosine
   num_samples: 64
 
-objects:
-  - type: Mesh
-    path: "models/bunny.npz"
-    brdf_params: [0.6, 0.6, 0.6, 1.0]
-    Le: [0.0, 0.0, 0.0]
+scene:
+  geometries:
+    # Veach Scene Lights
+    - type: Sphere
+      radius: 0.0333
+      center: [3.75, 0.0, 0.0]
+      Le: [9018.03, 0.0, 0.0]
 
-  - type: Sphere
-    center: [1.5, 0.5, 0.0]
-    radius: 0.5
-    brdf_params: [0.2, 0.8, 0.2, 1.0]
-    Le: [0.0, 0.0, 0.0]
+    - type: Sphere
+      radius: 0.1
+      center: [1.25, 0.0, 0.0]
+      Le: [0.0, 1000.0, 0.0]
 
-  - type: Sphere
-    center: [0.0, 3.0, 2.0]
-    radius: 1.0
-    brdf_params: [1.0, 1.0, 1.0, 1.0]
-    Le: [15.0, 15.0, 15.0]  # light source
+    - type: Sphere
+      radius: 0.3
+      center: [-1.25, 0.0, 0.0]
+      Le: [0.0, 0.0, 111.111]
+
+    - type: Sphere
+      radius: 0.9
+      center: [-3.75, 0.0, 0.0]
+      Le: [12.3457, 12.3457, 12.3457]
+
+    - type: Sphere
+      radius: 0.5
+      center: [-10.0, 10.0, 4.0]
+      Le: [800.0, 800.0, 800.0]
+
+    # Geometry
+    - type: Mesh
+      path: "models/plate1.npz"
+      brdf_params: [1.0, 1.0, 1.0, 30000.0]
+
+    - type: Mesh
+      path: "models/plate2.npz"
+      brdf_params: [1.0, 1.0, 1.0, 5000.0]
+
+    - type: Mesh
+      path: "models/plate3.npz"
+      brdf_params: [1.0, 1.0, 1.0, 1500.0]
+
+    - type: Mesh
+      path: "models/plate4.npz"
+      brdf_params: [1.0, 1.0, 1.0, 100.0]
+
+    - type: Mesh
+      path: "models/floor.npz"
+      brdf_params: [0.5, 0.5, 0.5, 1.0]
