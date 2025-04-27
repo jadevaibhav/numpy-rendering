@@ -1,8 +1,6 @@
 import numpy as np
-# Assuming primitives.py contains the Rays class definition
-# from primitives import Rays
-# Assuming utils.py contains helper functions like reflect_along_normal, rotate_vectors
-# from utils import *
+from primitives import Rays
+from utils import *
 
 # --- Constants for UniformSphereSampling type ---
 # These are kept as they are specific init arguments for UniformSphereSampling
@@ -171,8 +169,6 @@ class Sampling(object):
         alpha = current_brdf_params[:, -1:] # Keep dimension for broadcasting
         rho_d = current_brdf_params[:, :3] # Diffuse reflectance
 
-        # Need to import reflect_along_normal from utils
-        from utils import reflect_along_normal
         reflected_w = reflect_along_normal(current_rays_w, current_normals)
         specular_dot = np.sum(reflected_w * current_dirs, axis=-1, keepdims=True)
         # Clamp specular_dot to avoid issues with pow for negative bases
@@ -494,12 +490,6 @@ class BRDFSampling(Sampling):
     def __init__(self, **kwargs) -> None:
         super().__init__(sampling_type="brdf", **kwargs)
 
-    def _get_reflection_dir(self, current_rays_w, current_normals):
-        """Calculate the perfect specular reflection direction."""
-        # Need to import reflect_along_normal from utils
-        from utils import reflect_along_normal
-        return reflect_along_normal(current_rays_w, current_normals)
-
     def eval_prob_dist(self, dirs: np.ndarray, mask=None) -> np.ndarray:
         """Evaluates the probability density based on the Phong lobe."""
         if self.brdf_params is None or self.rays_w is None or self.normals is None:
@@ -574,16 +564,11 @@ class BRDFSampling(Sampling):
         # --- Determine the reference axis for rotation ---
         # Diffuse: Rotate from Z-axis to Normal
         # Specular: Rotate from Z-axis to Reflection direction
-        w_r = self._get_reflection_dir(current_rays_w, current_normals)
+        w_r = reflect_along_normal(current_rays_w, current_normals)
         reference_axis = np.where(is_diffuse, current_normals, w_r)
 
         # --- Rotate local samples to world frame ---
-        # Need to import generate_orthonormal_basis from utils
-        from utils import generate_orthonormal_basis
-        tangent, bitangent = generate_orthonormal_basis(reference_axis)
-        w = (tangent * w_local[:, 0:1] +
-             bitangent * w_local[:, 1:2] +
-             reference_axis * w_local[:, 2:3])
+        w = rotate_vectors(w_local,reference_axis)
 
         # --- Calculate PDF ---
         # PDF for cosine sampling: cos(theta_N) / pi = dot(N, w) / pi

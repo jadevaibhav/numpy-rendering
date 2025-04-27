@@ -1,0 +1,5 @@
+render-*
+models/
+launch.json
+*.pyc
+.DS_*

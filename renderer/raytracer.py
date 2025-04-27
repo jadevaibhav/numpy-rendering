@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# Assuming sampling contains the necessary Sampling base class and specific implementations
-from sampling import Sampling # Import base class or specific samplers as needed
+from sampling import Sampling 
 from utils import *
-# from utils import * # If needed, uncomment and ensure utils.py exists
-from primitives import Rays, Scene, Mesh, Camera # Import Scene, Rays etc.
+from primitives import Rays, Scene, Mesh, Camera 
 
 class RayTracer(object):
     """
@@ -19,14 +17,7 @@ class RayTracer(object):
     """
 
     def __init__(self, scene: Scene, sampler: Sampling, camera: Camera) -> None:
-        """
-        Initializes the RayTracer.
-
-        Args:
-            scene: The scene to render.
-            sampler: The sampling strategy to use for direct illumination.
-            camera: The camera defining the view.
-        """
+         
         self.scene = scene
         self.sampler = sampler
         self.camera = camera
@@ -71,11 +62,7 @@ class RayTracer(object):
         hit_points = rays(dist) 
 
         # Replace infinite normals (no hit) with zero vectors
-        # Use np.isinf() for checking infinity
         normals = np.where(np.isinf(normals), np.array([0.0, 0.0, 0.0]), normals)
-        # Ensure hit_points corresponding to no hits are handled if necessary (e.g., set to origin or inf)
-        # hit_points = np.where(ids[:, np.newaxis] == -1, np.array([np.inf, np.inf, np.inf]), hit_points)
-
 
         # --- Retrieve Material Properties ---
         # Create arrays of BRDF parameters and Le for all geometries
@@ -95,7 +82,7 @@ class RayTracer(object):
         # Ensure Le is zero for non-emissive surfaces that were hit (redundant if Le is correctly set in primitives)
         # l_e = np.where(ids[:, np.newaxis] != -1, l_e, np.array([0.0, 0.0, 0.0])) # Keep Le only for actual hits
 
-        return hit_points, normals, brdf_params, l_e, ids # Also return ids
+        return hit_points, normals, brdf_params, l_e, ids 
 
     def render(self, rays: Rays) -> np.ndarray:
         """
@@ -107,13 +94,11 @@ class RayTracer(object):
         Returns:
             np.ndarray: The calculated radiance for each ray, reshaped to (H, W, 3).
         """
-        # 1. Find first intersection
+        # 1. Find first intersection (eye rays)
         hit_points, normals, brdf_params, L_e, hit_ids = self.intersect_with_scene(rays)
 
         # Initialize the output image (radiance)
         L = np.zeros_like(normals, dtype=np.float64) # Shape (N, 3)
-
-        # Add emitted light from the first hit surface
         L += L_e
 
         # --- Direct Illumination ---
@@ -129,17 +114,15 @@ class RayTracer(object):
         valid_incoming_dirs = rays.Ds[hit_mask] # Incoming direction to the hit point
 
         # Initialize sampler with parameters of the valid hit points
-        # Note: Sampler needs to handle being updated with potentially different sized arrays
         self.sampler.set_initial_params(valid_hit_points, valid_normals, valid_brdf_params, valid_incoming_dirs)
 
-        L_direct = np.zeros_like(valid_normals, dtype=np.float64) # Radiance for valid hits
+        L_direct = np.zeros_like(valid_normals, dtype=np.float64)
 
         # Loop through each light source for direct illumination calculation
         for light in self.scene.lights:
             self.sampler.set_light(light) # Configure sampler for the current light
 
-            # a. Sample directions towards the light (generate shadow rays)
-            # The sampler should only use the valid hit points internally now
+            # a. Sample directions (generate shadow rays)
             shadow_rays, prob = self.sampler.shadow_rays() # Sampler generates N_valid rays
 
             # b. Check visibility: Intersect shadow rays with the scene
