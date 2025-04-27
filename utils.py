@@ -12,7 +12,8 @@ def extrinsic_matrix(look,up,cam):
     y_c = np.cross(z_c,x_c)
 
     M = np.eye(4,4)
-    M[:,:3] = np.array([x_c,y_c,z_c,cam]).T
+    #print("shape: ",np.array([x_c,y_c,z_c,cam]).T.shape)
+    M[:3,:] = np.array([x_c,y_c,z_c,cam]).T
     return M
 
 def generate_rays(fov,H,W,jitter=False):
@@ -30,7 +31,8 @@ def generate_rays(fov,H,W,jitter=False):
     x_cam = x_ndc*np.tan(fov/360*np.pi)*(W/H)
     y_cam = y_ndc*np.tan(fov/360*np.pi)
     z_cam = np.ones((H,W))
-    directions = np.stack([[x_cam,y_cam,z_cam,z_cam], -1])
+    
+    directions = np.stack([x_cam,y_cam,z_cam,z_cam], -1).reshape(-1,4)
     
     return directions
 

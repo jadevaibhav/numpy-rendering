@@ -68,7 +68,8 @@ class Sphere(Geometry):
         # Remove if required
         distances = np.zeros((rays.Os.shape[0],), dtype=np.float64)
         distances[:] = np.inf
-        normals = np.zeros(rays.Os.shape, dtype=np.float64)
+        print("shape:",rays.Os.shape)
+        normals = np.zeros(rays.Ds.shape, dtype=np.float64)
         normals[:,:] = np.array([np.inf, np.inf, np.inf])
         
         Os = rays.Os.astype('cdouble')

@@ -1,1 +1,1 @@
-from sampling import Sampling, UniformSphereSampling, CosineSampling, LightSampling, BRDFSampling, MISampling
+from .sampling import Sampling, UniformSphereSampling, CosineSampling, LightSampling, BRDFSampling, MISampling

@@ -1,4 +1,4 @@
-from .primitives import *
+from primitives import *
 import numpy as np
 
 class Scene(object):
