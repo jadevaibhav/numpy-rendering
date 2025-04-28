@@ -424,12 +424,7 @@ class LightSampling(Sampling):
 
         prob = np.where(is_within_cone, 1.0 / solid_angle, 0.0)
 
-        if mask is not None:
-            full_prob = np.zeros((dirs.shape[0], 1))
-            full_prob[mask] = prob
-            return full_prob
-        else:
-            return prob
+        return prob
 
     def sample(self, mask=None) -> tuple:
         """Samples directions uniformly within the solid angle subtended by the light."""
@@ -472,14 +467,14 @@ class LightSampling(Sampling):
         w = rotate_vectors(w_local,vec_to_center)
         prob = 1.0 / solid_angle # PDF is 1 / solid_angle
 
-        if mask is not None:
-             full_w = np.zeros_like(self.hit_points)
-             full_prob = np.zeros((self.hit_points.shape[0], 1))
-             full_w[mask] = w
-             full_prob[mask] = prob
-             return full_w, full_prob
-        else:
-             return w, prob
+        # if mask is not None:
+        #      full_w = np.zeros_like(self.hit_points)
+        #      full_prob = np.zeros((self.hit_points.shape[0], 1))
+        #      full_w[mask] = w
+        #      full_prob[mask] = prob
+        #      return full_w, full_prob
+        # else:
+        return w, prob
 
 
 class BRDFSampling(Sampling):
@@ -507,20 +502,15 @@ class BRDFSampling(Sampling):
         prob_diffuse = np.maximum(0.0, np.sum(current_normals * current_dirs, axis=-1, keepdims=True)) / np.pi
 
         # Handle specular case (alpha > 1)
-        w_r = self._get_reflection_dir(current_rays_w, current_normals)
+        w_r = reflect_along_normal(current_rays_w, current_normals)
         cos_alpha = np.sum(w_r * current_dirs, axis=-1, keepdims=True)
         cos_alpha = np.maximum(0.0, cos_alpha)
         # PDF for Phong lobe sampling: (alpha + 1) / (2 * pi) * cos(alpha_spec)^alpha
         prob_specular = (alpha + 1.0) / (2.0 * np.pi) * (cos_alpha ** alpha)
 
         prob = np.where(is_diffuse, prob_diffuse, prob_specular)
-
-        if mask is not None:
-            full_prob = np.zeros((dirs.shape[0], 1))
-            full_prob[mask] = prob
-            return full_prob
-        else:
-            return prob
+        
+        return prob
 
     def sample(self, mask=None) -> tuple:
         """Samples directions based on the Phong BRDF (cosine or specular lobe)."""
@@ -578,15 +568,8 @@ class BRDFSampling(Sampling):
         prob_specular = (alpha + 1.0) / (2.0 * np.pi) * (cos_alpha_spec ** alpha)
 
         prob = np.where(is_diffuse, prob_diffuse, prob_specular)
-
-        if mask is not None:
-             full_w = np.zeros_like(self.normals) # Match normals shape
-             full_prob = np.zeros((self.normals.shape[0], 1))
-             full_w[mask] = w
-             full_prob[mask] = prob
-             return full_w, full_prob
-        else:
-             return w, prob
+        
+        return w, prob
 
     # Override illumination to potentially use the simplified BRDF calculation from original code
     # Original: L = Le * BRDF_term / prob, where BRDF_term was different for diffuse/specular
@@ -617,8 +600,12 @@ class MISampling(Sampling):
         self.coin_toss = np.random.rand(self.hit_points.shape[0]) < 0.5 # 50/50 split
 
         # Instantiate BRDF sampler (doesn't need light)
-        self.brdf_sampler = BRDFSampling(**self._config_kwargs)
-        self.brdf_sampler.set_initial_params(self.hit_points, self.normals, self.brdf_params, self.rays_w)
+        self.brdf_sampler = BRDFSampling()
+        mask_brdf = ~self.coin_toss
+        self.brdf_sampler.set_initial_params(self.hit_points, 
+                                             self.normals, 
+                                             self.brdf_params, 
+                                             self.rays_w)
 
         # Instantiate Light sampler if light is already set
         if self.light is not None:
@@ -632,9 +619,13 @@ class MISampling(Sampling):
     def _ensure_light_sampler(self):
         """Creates the light sampler instance if it doesn't exist."""
         if self.light_sampler is None and self.light is not None and self.hit_points is not None:
-             self.light_sampler = LightSampling(**self._config_kwargs)
+             self.light_sampler = LightSampling()
              # Pass the currently set parameters and light
-             self.light_sampler.set_initial_params(self.hit_points, self.normals, self.brdf_params, self.rays_w)
+             mask_light = self.coin_toss
+             self.light_sampler.set_initial_params(self.hit_points, 
+                                                   self.normals, 
+                                                   self.brdf_params, 
+                                                   self.rays_w)
              self.light_sampler.set_light(self.light)
 
 
