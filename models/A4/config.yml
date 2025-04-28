@@ -1,0 +1,78 @@
+# Configuration for the Raytracer
+
+# Camera Settings
+camera:
+  look_at: [278.0, 273.0, 0.0]    # Target point
+  up: [0.0, 1.0, 0.0]             # Up direction
+  position: [278.0, 273.0, -800.0] # Camera location
+  fov: 39.0                       # Field of view in degrees
+  width: 512                      # Image width in pixels
+  height: 512                     # Image height in pixels
+  jitter: false                   # Use jittered rays for anti-aliasing
+
+# Renderer Settings
+renderer:
+  spp: 20                         # Default samples per pixel (can be overridden by CLI)
+  num_bounces: 1                  # Number of bounces (currently 1 for direct illumination)
+  # output_filename: "render_output.png" # Optional: specify output file
+
+# Sampler Selection (can be overridden by CLI)
+sampler:
+  type: "mis"                     # Default sampler type (e.g., light, cosine, brdf, mis)
+  # Add sampler-specific options here if needed in the future
+
+# Scene Definition
+scene:
+  # List of geometries in the scene
+  geometries:
+    # Light Source
+    - type: "Sphere"
+      parameters:
+        radius: 60.0
+        center: [278.0, 450.0, 250.0]
+        emission: [19.5, 19.5, 19.5]  # Le = 1.25 * [15.6, 15.6, 15.6]
+
+    # Cornell Box Walls and Objects (Meshes)
+    # Note: 'filename' should be relative to the mesh directory specified via CLI
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_floor.npz"
+        brdf: [0.76, 0.76, 0.76, 1.0] # [Kd_r, Kd_g, Kd_b, alpha]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_ceiling.npz"
+        brdf: [0.76, 0.76, 0.76, 1.0]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_back.npz"
+        brdf: [0.76, 0.76, 0.76, 1.0]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_greenwall.npz"
+        brdf: [0.16, 0.76, 0.16, 1.0]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_redwall.npz"
+        brdf: [0.76, 0.16, 0.16, 1.0]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_smallbox.npz"
+        brdf: [0.76, 0.76, 0.76, 1.0]
+
+    - type: "Mesh"
+      parameters:
+        filename: "cbox_largebox.npz"
+        brdf: [0.76, 0.76, 0.76, 1.0]
+
+    # Add more geometries here if needed
+    # - type: "Sphere"
+    #   parameters:
+    #     radius: 50.0
+    #     center: [150.0, 100.0, 150.0]
+    #     brdf: [0.1, 0.1, 0.9, 10.0] # Blueish, slightly specular
+    #     emission: [0.0, 0.0, 0.0]   # Default emission is zero

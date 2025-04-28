@@ -100,7 +100,7 @@ class RayTracer(object):
         # Initialize the output image (radiance)
         L = np.zeros_like(normals, dtype=np.float64) # Shape (N, 3)
         L += L_e
-
+        
         # --- Direct Illumination ---
         # Only calculate direct illumination for rays that actually hit something
         hit_mask = (hit_ids != -1)
@@ -194,7 +194,6 @@ class RayTracer(object):
             primary_rays = self.generate_cam_rays()
 
             # 2. Render this sample (currently only direct illumination)
-            # TODO: Extend `render` for multi-bounce path tracing if needed
             L_sample = self.render(primary_rays)
 
             # 3. Accumulate radiance

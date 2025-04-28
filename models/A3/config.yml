@@ -1,0 +1,84 @@
+# Configuration for the Raytracer - Veach Scene
+
+# Camera Settings
+camera:
+  # Note: 'look_at' derived from 'at' vector in original code snippet
+  # Assuming 'at' = [0, -2, 2.5] was direction from 'eye' = [0, 2, 15]
+  position: [0.0, 2.0, 15.0]     # eye
+  look_at: [0.0, -2.0, 2.5]      # where to look
+  up: [0.0, 1.0, 0.0]
+  fov: 40.0
+  width: 512
+  height: 512                    # Image height in pixels
+  jitter: false                   # Use jittered rays for anti-aliasing
+
+# Renderer Settings
+renderer:
+  spp: 20                         # Default samples per pixel (can be overridden by CLI)
+  num_bounces: 1                  # Number of bounces (currently 1 for direct illumination)
+
+# Sampler Selection (can be overridden by CLI)
+sampler:
+  type: "mis"                     # Default sampler type (MIS is often good for complex lighting)
+
+# Scene Definition
+scene:
+  # List of geometries in the scene
+  geometries:
+    # --- Veach Scene Lights (Spheres with Emission) ---
+    - type: "Sphere"
+      parameters:
+        radius: 0.0333
+        center: [3.75, 0.0, 0.0]
+        emission: [9018.03, 0.0, 0.0]   # Le = 10 * [901.803, 0, 0]
+
+    - type: "Sphere"
+      parameters:
+        radius: 0.1
+        center: [1.25, 0.0, 0.0]
+        emission: [0.0, 1000.0, 0.0]    # Le = 10 * [0, 100, 0]
+
+    - type: "Sphere"
+      parameters:
+        radius: 0.3
+        center: [-1.25, 0.0, 0.0]
+        emission: [0.0, 0.0, 111.111]   # Le = 10 * [0, 0, 11.1111]
+
+    - type: "Sphere"
+      parameters:
+        radius: 0.9
+        center: [-3.75, 0.0, 0.0]
+        emission: [12.3457, 12.3457, 12.3457] # Le = 10 * [1.23457, 1.23457, 1.23457]
+
+    - type: "Sphere"
+      parameters:
+        radius: 0.5
+        center: [-10.0, 10.0, 4.0]
+        emission: [800.0, 800.0, 800.0]
+
+    # --- Veach Scene Geometry (Meshes) ---
+    # Note: 'filename' should be relative to the mesh directory specified via CLI
+    - type: "Mesh"
+      parameters:
+        filename: "plate1.npz"
+        brdf: [1.0, 1.0, 1.0, 1000.0] # [Kd_r, Kd_g, Kd_b, alpha] - Very specular
+
+    - type: "Mesh"
+      parameters:
+        filename: "plate2.npz"
+        brdf: [1.0, 1.0, 1.0, 500.0]  # Specular
+
+    - type: "Mesh"
+      parameters:
+        filename: "plate3.npz"
+        brdf: [1.0, 1.0, 1.0, 200.0]  # Less specular
+
+    - type: "Mesh"
+      parameters:
+        filename: "plate4.npz"
+        brdf: [1.0, 1.0, 1.0, 50.0]   # Slightly specular
+
+    - type: "Mesh"
+      parameters:
+        filename: "floor.npz"
+        brdf: [0.5, 0.5, 0.5, 1.0]     # Diffuse grey
