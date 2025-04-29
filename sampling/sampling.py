@@ -92,8 +92,7 @@ class Sampling(object):
         new_ray_dir, prob = self.sample()
         # Offset origin slightly along the normal to avoid self-intersection
         origins = self.hit_points + self.shadow_ray_o_offset * self.normals
-        # Need to import Rays from primitives
-        from primitives import Rays
+        
         return Rays(origins, new_ray_dir), prob
 
     def sample(self, mask=None) -> tuple:
@@ -231,9 +230,6 @@ class UniformSphereSampling(Sampling):
             # PDF for uniform sampling over the entire sphere surface
             return 1.0 / (4.0 * np.pi)
         else: # UNIFORM_HEMI_SPH_SAMPLING
-            # PDF for uniform sampling over the hemisphere surface
-            # Note: This assumes directions 'dirs' are already in the correct hemisphere.
-            # The PDF is constant *within* the valid domain (hemisphere).
             return 1.0 / (2.0 * np.pi)
 
     def sample(self, mask=None) -> tuple:
@@ -331,32 +327,16 @@ class CosineSampling(Sampling):
         x_local = r * np.cos(phi)
         y_local = r * np.sin(phi)
         z_local = np.sqrt(np.maximum(0.0, 1.0 - rv1)) # z = sqrt(1 - r^2)
-
         w_local = np.stack([x_local, y_local, z_local], axis=-1)
 
         # Create orthonormal basis around the normal
         current_normals = self.normals if mask is None else self.normals[mask]
-        # Need to import generate_orthonormal_basis from utils
-        from utils import generate_orthonormal_basis
-        tangent, bitangent = generate_orthonormal_basis(current_normals)
-
-        # Transform from local coordinates to world coordinates
-        w = (tangent * w_local[:, 0:1] +
-             bitangent * w_local[:, 1:2] +
-             current_normals * w_local[:, 2:3])
-        # w should be normalized by construction
+        w = rotate_vectors(w_local,current_normals)
 
         # PDF is cos(theta) / pi = z_local / pi = dot(N, w) / pi
         prob = w_local[:, 2:3] / np.pi # Use z_local directly
 
-        if mask is not None:
-             full_w = np.zeros_like(self.hit_points)
-             full_prob = np.zeros((self.hit_points.shape[0], 1))
-             full_w[mask] = w
-             full_prob[mask] = prob
-             return full_w, full_prob
-        else:
-             return w, prob
+        return w, prob
 
     # Illumination can often be inherited if the base class handles BRDF * cos / pdf correctly
     # However, the original CosineSampling had a simplified illumination. Let's override
@@ -455,15 +435,9 @@ class LightSampling(Sampling):
         z_local = cos_theta
         w_local = np.concatenate([x_local, y_local, z_local], axis=-1)
 
-        # Create orthonormal basis and rotate
-        # Need to import generate_orthonormal_basis from utils
-        from utils import rotate_vectors # Or implement rotation logic
+        from utils import rotate_vectors 
         # Rotate w_local (aligned with Z) to be aligned with vec_to_center
-        # This requires a robust rotation function or creating basis
-        # tangent, bitangent = generate_orthonormal_basis(vec_to_center)
-        # w = (tangent * w_local[:, 0:1] +
-        #      bitangent * w_local[:, 1:2] +
-        #      vec_to_center * w_local[:, 2:3])
+        
         w = rotate_vectors(w_local,vec_to_center)
         prob = 1.0 / solid_angle # PDF is 1 / solid_angle
 
