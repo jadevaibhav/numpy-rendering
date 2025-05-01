@@ -23,16 +23,38 @@ Supports configurable scenes, multiple sampling strategies (cosine, uniform, MIS
   Add new samplers or materials by registering classes—no core changes required.
 
 ---
+## 🔬 About this Project
+
+This repository provides a simplified NumPy-based physics rendering playground, designed for research and rapid experimentation in graphics and differential rendering. Its primary goal is clarity and extensibility, making it easy to plug in new sampling, shading, or integration algorithms without worrying about performance optimizations.
+
+## ⚠️ What it Does NOT Do
+
+- Optimized ray–object intersection acceleration structures (e.g., BVH, KD-trees)
+
+- Level-of-detail (LOD) management or mesh simplification
+
+- Frustum culling or near/far plane clipping
+
+- GPU acceleration, multi-threading (Can be done with drop-in CuPy)
+
+- Advanced material models (e.g., glossy, anisotropic, subsurface scattering)
+
+- Real-time or production-level performance optimizations
+
+- Texture mapping or UV-based materials
+
+---
 
 ## 📋 Table of Contents
 
 1. [Installation](#installation)  
 2. [Quick Start](#quick-start)  
-3. [Configuration](#configuration)  
-4. [Project Structure](#project-structure)  
-5. [Adding New Samplers](#adding-new-samplers)  
-6. [Contributing](#contributing)  
-7. [License](#license)
+3. [Configuration](#configuration) 
+4. [Results](#sample_results) 
+5. [Project Structure](#project-structure)  
+6. [Adding New Samplers](#adding-new-samplers)  
+7. [Contributing](#contributing)  
+8. [License](#license)
 
 ---
 
@@ -118,6 +140,23 @@ scene:
   - **Sphere**: `radius`, `center`, optional `emission`.
   - **Mesh**: `.npz` file with `'v','f','vn'`, plus `brdf_params`, optional `emission`, `scale` & `translation`.
 
+---
+
+## 🖼️ Sample Results
+
+### Scene 1 — Veach Scene
+
+| Light Sampling | BRDF Sampling | MIS Sampling |
+|-----------------|------------------|--------------|
+| ![Cosine](assets/scene1_light.png) | ![Uniform](assets/scene1_brdf.png) | ![MIS](assets/scene1_mis.png) |
+
+---
+
+### Scene 2 — Cornell Box
+
+| Light Sampling | BRDF Sampling | MIS Sampling |
+|-----------------|------------------|--------------|
+| ![Cosine](assets/scene2_light.png) | ![Uniform](assets/scene2_brdf.png) | ![MIS](assets/scene2_mis.png) |
 ---
 
 ## 📂 Project Structure
