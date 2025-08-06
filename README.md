@@ -6,6 +6,22 @@ A modular, educational CPU-based ray tracer built with **NumPy**.
 Supports configurable scenes, multiple sampling strategies (cosine, uniform, MIS), sphere and mesh primitives, and progressive rendering via YAML-driven configs.
 
 ---
+## 🖼️ Sample Results
+
+### Scene 1 — Veach Scene
+
+| Light Sampling | BRDF Sampling | MIS Sampling |
+|-----------------|------------------|--------------|
+| ![Cosine](assets/scene1_light.png) | ![Uniform](assets/scene1_brdf.png) | ![MIS](assets/scene1_mis.png) |
+
+---
+
+### Scene 2 — Cornell Box
+
+| Light Sampling | BRDF Sampling | MIS Sampling |
+|-----------------|------------------|--------------|
+| ![Cosine](assets/scene2_light.png) | ![Uniform](assets/scene2_brdf.png) | ![MIS](assets/scene2_mis.png) |
+---
 
 ## 🚀 Features
 
@@ -140,23 +156,6 @@ scene:
   - **Sphere**: `radius`, `center`, optional `emission`.
   - **Mesh**: `.npz` file with `'v','f','vn'`, plus `brdf_params`, optional `emission`, `scale` & `translation`.
 
----
-
-## 🖼️ Sample Results
-
-### Scene 1 — Veach Scene
-
-| Light Sampling | BRDF Sampling | MIS Sampling |
-|-----------------|------------------|--------------|
-| ![Cosine](assets/scene1_light.png) | ![Uniform](assets/scene1_brdf.png) | ![MIS](assets/scene1_mis.png) |
-
----
-
-### Scene 2 — Cornell Box
-
-| Light Sampling | BRDF Sampling | MIS Sampling |
-|-----------------|------------------|--------------|
-| ![Cosine](assets/scene2_light.png) | ![Uniform](assets/scene2_brdf.png) | ![MIS](assets/scene2_mis.png) |
 ---
 
 ## 📂 Project Structure
